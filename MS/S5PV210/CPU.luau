@@ -221,10 +221,31 @@ function module.Execute(CMDLINE:string) -- 32bit command
 		else
 			module.Registers[DESTREG] = bit32.bxor(module.Registers[SRCAREG], tonumber(SRCBIMM))
 		end
-	elseif (CMD:sub(1, 3) == "ORR") then
-		
-	elseif (CMD:sub(1, 3) == "BIC") then
 
+		if (CMD:sub(4, 4) == "S") then
+			module.FLAGSUPDATE(module.Registers[DESTREG], module.Registers[SRCAREG], SRCBIMM == nil and module.Registers[SRCBREG] or tostring(SRCBIMM))
+		end
+
+	elseif (CMD:sub(1, 3) == "ORR") then
+		if (SRCBIMM == nil) then
+			module.Registers[DESTREG] = bit32.bor(module.Registers[SRCAREG], module.Registers[SRCBREG])
+		else
+			module.Registers[DESTREG] = bit32.bor(module.Registers[SRCAREG], tonumber(SRCBIMM))
+		end
+
+		if (CMD:sub(4, 4) == "S") then
+			module.FLAGSUPDATE(module.Registers[DESTREG], module.Registers[SRCAREG], SRCBIMM == nil and module.Registers[SRCBREG] or tostring(SRCBIMM))
+		end
+	elseif (CMD:sub(1, 3) == "BIC") then
+		if (SRCBIMM == nil) then
+			module.Registers[DESTREG] = bit32.band(bit32.bnot(module.Registers[SRCAREG]), module.Registers[SRCBREG])
+		else
+			module.Registers[DESTREG] = bit32.band(bit32.bnot(module.Registers[SRCAREG]), tonumber(SRCBIMM))
+		end
+
+		if (CMD:sub(4, 4) == "S") then
+			module.FLAGSUPDATE(module.Registers[DESTREG], module.Registers[SRCAREG], SRCBIMM == nil and module.Registers[SRCBREG] or tostring(SRCBIMM))
+		end
 	elseif (CMD:sub(1, 3) == "MOV") then		
 		if (SRCAIMM == nil) then
 			module.Registers[DESTREG] = module.Registers[SRCAREG]
