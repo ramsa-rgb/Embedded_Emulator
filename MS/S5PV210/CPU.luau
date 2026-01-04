@@ -358,7 +358,7 @@ function module.Execute(CMDLINE:string) -- 32bit command
 		end
 	elseif (CMD:sub(1, 3) == "STR") then
 		if (PREINDEX == true) then
-			MMIO.AccessMMIO(1, tonumber(SRCAMMIMM) == nil and module.Registers[SRCAMMREG] or tonumber(SRCAMMIMM) + SRCBMMIMM == nil and 0 or tonumber(SRCBMMIMM), module.Registers[DESTREG])
+			MMIO.AccessMMIO(1, (tonumber(SRCAMMIMM) == nil and module.Registers[SRCAMMREG] or tonumber(SRCAMMIMM)) + (SRCBMMIMM == nil and 0 or tonumber(SRCBMMIMM)), module.Registers[DESTREG])
 			if (ADDRESSREGUPDATE == true) then
 				module.Registers[SRCAMMREG] += SRCBMMIMM == nil and 0 or tonumber(SRCBMMIMM)
 			end
