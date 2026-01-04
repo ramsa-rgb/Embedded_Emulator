@@ -99,14 +99,6 @@ function module.Run()
 	while (Abort == false) do
 		local COMMAND = MMIO.AccessMMIO(0, module.Registers.R15)
 		module.Execute(COMMAND)
-		
-		local LOG = ""
-
-		for N, V in pairs(module.Registers) do
-			LOG = LOG .. N .. " : " .. V .. " "
-		end
-
-		print(LOG .. " LOG END.")
 
 		module.Registers.R15 += 1
 	end
@@ -146,12 +138,12 @@ function module.Execute(CMDLINE:string) -- 32bit command
 	
 	local CMD = STRSPLIT[1]:upper()
 
+	print(CMD)
+	local DESTREG = STRSPLIT[2]:upper():split(",")[1]
+	local SRCAREG = STRSPLIT[3]:upper():split(",")[1]
+	local SRCBREG = STRSPLIT[4]:upper():split(",")[1]
+	local SRCBIMM = STRSPLIT[4]:upper():split("#")[2]
 	if (CMD:sub(1, 3) == "ADC") then
-		local DESTREG = STRSPLIT[2]:upper():split(",")[1]
-		local SRCAREG = STRSPLIT[3]:upper():split(",")[1]
-		local SRCBREG = STRSPLIT[4]:upper():split(",")[1]
-		local SRCBIMM = STRSPLIT[4]:upper():split("#")[2]
-
 		if (SRCBIMM == nil) then
 			module.Registers[DESTREG] = module.Registers[SRCAREG] + module.Registers[SRCBREG] + tonumber(bitmgr.getbits(module.Registers.CPSR, 29, 29))
 		else
@@ -162,12 +154,7 @@ function module.Execute(CMDLINE:string) -- 32bit command
 			module.FLAGSUPDATE(module.Registers[DESTREG], module.Registers[SRCAREG], SRCBIMM == nil and module.Registers[SRCBREG] or tostring(SRCBIMM))
 		end
 
-	elseif (CMD == "ADD") then
-		local DESTREG = STRSPLIT[2]:upper():split(",")[1]
-		local SRCAREG = STRSPLIT[3]:upper():split(",")[1]
-		local SRCBREG = STRSPLIT[4]:upper():split(",")[1]
-		local SRCBIMM = STRSPLIT[4]:upper():split("#")[2]
-		
+	elseif (CMD:sub(1, 3) == "ADD") then
 		if (SRCBIMM == nil) then
 			module.Registers[DESTREG] = module.Registers[SRCAREG] + module.Registers[SRCBREG]
 		else
@@ -178,12 +165,7 @@ function module.Execute(CMDLINE:string) -- 32bit command
 			module.FLAGSUPDATE(module.Registers[DESTREG], module.Registers[SRCAREG], SRCBIMM == nil and module.Registers[SRCBREG] or tostring(SRCBIMM))
 		end
 
-	elseif (CMD == "SUB") then
-		local DESTREG = STRSPLIT[2]:upper():split(",")[1]
-		local SRCAREG = STRSPLIT[3]:upper():split(",")[1]
-		local SRCBREG = STRSPLIT[4]:upper():split(",")[1]
-		local SRCBIMM = STRSPLIT[4]:upper():split("#")[2]
-		
+	elseif (CMD:sub(1, 3) == "SUB") then
 		if (SRCBIMM == nil) then
 			module.Registers[DESTREG] = module.Registers[SRCAREG] - module.Registers[SRCBREG]
 		else
@@ -193,12 +175,7 @@ function module.Execute(CMDLINE:string) -- 32bit command
 		if (CMD:sub(4, 4) == "S") then
 			module.FLAGSUPDATE(module.Registers[DESTREG], module.Registers[SRCAREG], SRCBIMM == nil and module.Registers[SRCBREG] or tostring(SRCBIMM))
 		end
-	elseif (CMD == "SBC") then
-		local DESTREG = STRSPLIT[2]:upper():split(",")[1]
-		local SRCAREG = STRSPLIT[3]:upper():split(",")[1]
-		local SRCBREG = STRSPLIT[4]:upper():split(",")[1]
-		local SRCBIMM = STRSPLIT[4]:upper():split("#")[2]
-
+	elseif (CMD:sub(1, 3) == "SBC") then
 		if (SRCBIMM == nil) then
 			module.Registers[DESTREG] = module.Registers[SRCAREG] - module.Registers[SRCBREG] - tonumber(1 - bitmgr.getbits(module.Registers.CPSR, 29, 29))
 		else
@@ -208,12 +185,7 @@ function module.Execute(CMDLINE:string) -- 32bit command
 		if (CMD:sub(4, 4) == "S") then
 			module.FLAGSUPDATE(module.Registers[DESTREG], module.Registers[SRCAREG], SRCBIMM == nil and module.Registers[SRCBREG] or tostring(SRCBIMM))
 		end
-	elseif (CMD == "RSB") then
-		local DESTREG = STRSPLIT[2]:upper():split(",")[1]
-		local SRCAREG = STRSPLIT[3]:upper():split(",")[1]
-		local SRCBREG = STRSPLIT[4]:upper():split(",")[1]
-		local SRCBIMM = STRSPLIT[4]:upper():split("#")[2]
-		
+	elseif (CMD:sub(1, 3) == "RSB") then
 		if (SRCBIMM == nil) then
 			module.Registers[DESTREG] = module.Registers[SRCBREG] - module.Registers[SRCAREG]
 		else
@@ -223,12 +195,7 @@ function module.Execute(CMDLINE:string) -- 32bit command
 		if (CMD:sub(4, 4) == "S") then
 			module.FLAGSUPDATE(module.Registers[DESTREG], module.Registers[SRCAREG], SRCBIMM == nil and module.Registers[SRCBREG] or tostring(SRCBIMM))
 		end
-	elseif (CMD == "RSC") then
-		local DESTREG = STRSPLIT[2]:upper():split(",")[1]
-		local SRCAREG = STRSPLIT[3]:upper():split(",")[1]
-		local SRCBREG = STRSPLIT[4]:upper():split(",")[1]
-		local SRCBIMM = STRSPLIT[4]:upper():split("#")[2]
-
+	elseif (CMD:sub(1, 3) == "RSC") then
 		if (SRCBIMM == nil) then
 			module.Registers[DESTREG] = module.Registers[SRCBREG] - module.Registers[SRCAREG] - tonumber(1 - bitmgr.getbits(module.Registers.CPSR, 29, 29))
 		else
@@ -238,11 +205,15 @@ function module.Execute(CMDLINE:string) -- 32bit command
 		if (CMD:sub(4, 4) == "S") then
 			module.FLAGSUPDATE(module.Registers[DESTREG], module.Registers[SRCAREG], SRCBIMM == nil and module.Registers[SRCBREG] or tostring(SRCBIMM))
 		end
-	elseif (CMD == "MOV") then
-		local DESTREG = STRSPLIT[2]:upper():split(",")[1]
-		local SRCAREG = STRSPLIT[3]:upper():split(",")[1]
-		local SRCAIMM = STRSPLIT[3]:upper():split("#")[2]
-		
+	elseif (CMD:sub(1, 3) == "AND") then
+
+	elseif (CMD:sub(1, 3) == "EOR") then
+
+	elseif (CMD:sub(1, 3) == "ORR") then
+
+	elseif (CMD:sub(1, 3) == "BIC") then
+
+	elseif (CMD:sub(1, 3) == "MOV") then		
 		if (SRCAIMM == nil) then
 			module.Registers[DESTREG] = module.Registers[SRCAREG]
 		else
