@@ -106,22 +106,22 @@ end
 
 function module.FLAGSUPDATE(VALUE, SRC0, SRC1)
 	if (VALUE > 0xFFFFFFFF) then
-		module.Registers.CPSR = bitmgr.setbit(CPSR, 29, 1)
+		module.Registers.CPSR = bitmgr.setbit(module.Registers.CPSR, 29, 1)
 	end
 
 	if (bit32.band(
 		bit32.bnot(bit32.bxor(SRC0, SRC1)),
 		bit32.bxor(SRC0, VALUE)
 	)) then
-		module.Registers.CPSR = bitmgr.setbit(CPSR, 28, 1)
+		module.Registers.CPSR = bitmgr.setbit(module.Registers.CPSR, 28, 1)
 	end
 
 	if (VALUE == 0) then
-		module.Registers.CPSR = bitmgr.setbit(CPSR, 30, 1)
+		module.Registers.CPSR = bitmgr.setbit(module.Registers.CPSR, 30, 1)
 	end
 
 	if (VALUE < 0) then
-		module.Registers.CPSR = bitmgr.setbit(CPSR, 31, 1)
+		module.Registers.CPSR = bitmgr.setbit(module.Registers.CPSR, 31, 1)
 	end
 end
 
@@ -135,14 +135,31 @@ function module.Execute(CMDLINE:string) -- 32bit command
 		module.Abort(module.Registers.R15, 0, 0, 0)
 		return
 	end
-	
-	local CMD = STRSPLIT[1]:upper()
 
-	print(CMD)
-	local DESTREG = STRSPLIT[2]:upper():split(",")[1]
-	local SRCAREG = STRSPLIT[3]:upper():split(",")[1]
-	local SRCBREG = STRSPLIT[4]:upper():split(",")[1]
-	local SRCBIMM = STRSPLIT[4]:upper():split("#")[2]
+	local CMD = STRSPLIT[1]:upper()
+	print(CMDLINE)
+
+	local DESTREG
+	local SRCAREG
+	local SRCAIMM
+	local SRCBREG
+	local SRCBIMM
+
+	pcall(function()
+		DESTREG = STRSPLIT[2]:upper():split(",")[1]
+	end)
+	pcall(function()
+		SRCAREG = STRSPLIT[3]:upper():split(",")[1]
+	end)
+	pcall(function()
+		SRCAIMM = STRSPLIT[3]:upper():split("#")[2]
+	end)
+	pcall(function()
+		SRCBREG = STRSPLIT[4]:upper():split(",")[1]
+	end)
+	pcall(function()
+		SRCBIMM = STRSPLIT[4]:upper():split("#")[2]
+	end)
 	if (CMD:sub(1, 3) == "ADC") then
 		if (SRCBIMM == nil) then
 			module.Registers[DESTREG] = module.Registers[SRCAREG] + module.Registers[SRCBREG] + tonumber(bitmgr.getbits(module.Registers.CPSR, 29, 29))
@@ -238,9 +255,9 @@ function module.Execute(CMDLINE:string) -- 32bit command
 		end
 	elseif (CMD:sub(1, 3) == "BIC") then
 		if (SRCBIMM == nil) then
-			module.Registers[DESTREG] = bit32.band(bit32.bnot(module.Registers[SRCAREG]), module.Registers[SRCBREG])
+			module.Registers[DESTREG] = bit32.band(module.Registers[SRCAREG], bit32.bnot(module.Registers[SRCBREG]))
 		else
-			module.Registers[DESTREG] = bit32.band(bit32.bnot(module.Registers[SRCAREG]), tonumber(SRCBIMM))
+			module.Registers[DESTREG] = bit32.band(module.Registers[SRCAREG], bit32.bnot(tonumber(SRCBIMM)))
 		end
 
 		if (CMD:sub(4, 4) == "S") then
