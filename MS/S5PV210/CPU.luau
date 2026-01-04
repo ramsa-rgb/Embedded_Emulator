@@ -147,7 +147,7 @@ function module.Execute(CMDLINE:string) -- 32bit command
 		if (SRCBIMM == nil) then
 			module.Registers[DESTREG] = module.Registers[SRCAREG] + module.Registers[SRCBREG] + tonumber(bitmgr.getbits(module.Registers.CPSR, 29, 29))
 		else
-			module.Registers[DESTREG] = module.Registers[SRCAREG] + module.Registers[SRCBIMM] + tonumber(bitmgr.getbits(module.Registers.CPSR, 29, 29))
+			module.Registers[DESTREG] = module.Registers[SRCAREG] + tonumber(SRCBIMM) + tonumber(bitmgr.getbits(module.Registers.CPSR, 29, 29))
 		end
 		
 		if (CMD:sub(4, 4) == "S") then
@@ -179,7 +179,7 @@ function module.Execute(CMDLINE:string) -- 32bit command
 		if (SRCBIMM == nil) then
 			module.Registers[DESTREG] = module.Registers[SRCAREG] - module.Registers[SRCBREG] - tonumber(1 - bitmgr.getbits(module.Registers.CPSR, 29, 29))
 		else
-			module.Registers[DESTREG] = module.Registers[SRCAREG] - module.Registers[SRCBIMM] - tonumber(1 - bitmgr.getbits(module.Registers.CPSR, 29, 29))
+			module.Registers[DESTREG] = module.Registers[SRCAREG] - tonumber(SRCBIMM) - tonumber(1 - bitmgr.getbits(module.Registers.CPSR, 29, 29))
 		end
 		
 		if (CMD:sub(4, 4) == "S") then
@@ -199,18 +199,30 @@ function module.Execute(CMDLINE:string) -- 32bit command
 		if (SRCBIMM == nil) then
 			module.Registers[DESTREG] = module.Registers[SRCBREG] - module.Registers[SRCAREG] - tonumber(1 - bitmgr.getbits(module.Registers.CPSR, 29, 29))
 		else
-			module.Registers[DESTREG] = module.Registers[SRCBIMM] - module.Registers[SRCAREG] - tonumber(1 - bitmgr.getbits(module.Registers.CPSR, 29, 29))
+			module.Registers[DESTREG] = tonumber(SRCBIMM) - module.Registers[SRCAREG] - tonumber(1 - bitmgr.getbits(module.Registers.CPSR, 29, 29))
 		end
 		
 		if (CMD:sub(4, 4) == "S") then
 			module.FLAGSUPDATE(module.Registers[DESTREG], module.Registers[SRCAREG], SRCBIMM == nil and module.Registers[SRCBREG] or tostring(SRCBIMM))
 		end
 	elseif (CMD:sub(1, 3) == "AND") then
+		if (SRCBIMM == nil) then
+			module.Registers[DESTREG] = bit32.band(module.Registers[SRCAREG], module.Registers[SRCBREG])
+		else
+			module.Registers[DESTREG] = bit32.band(module.Registers[SRCAREG], tonumber(SRCBIMM))
+		end
 
+		if (CMD:sub(4, 4) == "S") then
+			module.FLAGSUPDATE(module.Registers[DESTREG], module.Registers[SRCAREG], SRCBIMM == nil and module.Registers[SRCBREG] or tostring(SRCBIMM))
+		end
 	elseif (CMD:sub(1, 3) == "EOR") then
-
+		if (SRCBIMM == nil) then
+			module.Registers[DESTREG] = bit32.bxor(module.Registers[SRCAREG], module.Registers[SRCBREG])
+		else
+			module.Registers[DESTREG] = bit32.bxor(module.Registers[SRCAREG], tonumber(SRCBIMM))
+		end
 	elseif (CMD:sub(1, 3) == "ORR") then
-
+		
 	elseif (CMD:sub(1, 3) == "BIC") then
 
 	elseif (CMD:sub(1, 3) == "MOV") then		
