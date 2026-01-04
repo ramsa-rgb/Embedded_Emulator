@@ -150,7 +150,7 @@ local Memory_Map = {
 	table.unpack(MMIO)
 }
 
-function module.AccessMMIO(ACCESS, ADDRESS, DATA) : number -- READ 0, WRITE 1
+function module.AccessMMIO(ACCESS, ADDRESS, DATA) -- READ 0, WRITE 1
 	for i=1, #Memory_Map do
 		local Map = Memory_Map[i]
 		if (ADDRESS >= Map[1] and ADDRESS <= Map[2]) then
